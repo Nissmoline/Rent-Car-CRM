@@ -7,7 +7,9 @@
     "server": "node server/index.js",
     "client": "cd client && npm start",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "install-all": "npm install && cd client && npm install"
+    "install-all": "npm install && cd client && npm install",
+    "build": "cd client && npm install && npm run build",
+    "start": "node server/index.js"
   },
   "keywords": ["crm", "car-rental", "booking"],
   "author": "",

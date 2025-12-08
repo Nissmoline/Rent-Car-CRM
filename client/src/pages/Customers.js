@@ -23,6 +23,7 @@ function Customers() {
 
   useEffect(() => {
     loadCustomers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
   const loadCustomers = async () => {

@@ -1,6 +1,18 @@
-# Rent Car CRM System
+# 🚗 Rent Car CRM System
 
 A comprehensive Customer Relationship Management (CRM) system designed specifically for car rental businesses. Built with modern web technologies to streamline operations, manage inventory, track bookings, and handle payments efficiently.
+
+## 🚀 Quick Deploy to Vercel
+
+Want to deploy right now? Follow the **[Quick Start Guide](QUICK_START_VERCEL.md)** (5-10 minutes)
+
+**Quick steps:**
+1. Create Vercel Postgres database
+2. Connect to project
+3. Set environment variables (`NODE_ENV`, `JWT_SECRET`, `PORT`)
+4. Deploy!
+
+See [QUICK_START_VERCEL.md](QUICK_START_VERCEL.md) for detailed walkthrough.
 
 ## Features
 

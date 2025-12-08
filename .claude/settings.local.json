@@ -18,7 +18,8 @@
       "Bash(set BROWSER=none)",
       "Bash(curl:*)",
       "Bash(del \\.c:UsersKolpaprojectsCRM System Rent Carnul)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

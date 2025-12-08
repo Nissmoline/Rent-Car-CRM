@@ -76,28 +76,37 @@ A comprehensive Customer Relationship Management (CRM) system designed specifica
 
 1. Clone or download the project to your local machine
 
-2. Install backend dependencies:
-```bash
-npm install
+2. Install all dependencies:
+
+**For Windows (PowerShell):**
+```powershell
+.\install-all.ps1
 ```
 
-3. Install frontend dependencies:
+**For Linux/Mac or Git Bash:**
 ```bash
+npm run install-all
+```
+
+**Or manually:**
+```bash
+npm install
 cd client
 npm install
 cd ..
 ```
 
-4. Create environment configuration:
+3. Create environment configuration:
 ```bash
 cp .env.example .env
 ```
 
-5. Edit the `.env` file and set your configuration:
+4. Edit the `.env` file and set your configuration:
 ```
 PORT=5000
 JWT_SECRET=your_secure_jwt_secret_key_here
 NODE_ENV=development
+REACT_APP_API_URL=/api
 ```
 
 ## Running the Application
@@ -262,6 +271,22 @@ The system uses SQLite with the following tables:
 - Duplicate detection for license plates, VINs, and emails
 - Date range validation for bookings
 - Vehicle availability checking
+
+## Deployment
+
+For production deployment to Vercel, see [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
+
+### Quick Deploy to Vercel
+
+1. Push your code to GitHub/GitLab/Bitbucket
+2. Import project in [Vercel Dashboard](https://vercel.com/dashboard)
+3. Add environment variables:
+   - `NODE_ENV=production`
+   - `JWT_SECRET=your_secure_key`
+   - `PORT=5000`
+4. Deploy!
+
+**Note:** For production, consider replacing SQLite with a cloud database (PostgreSQL, MongoDB, etc.)
 
 ## Future Enhancements
 

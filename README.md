@@ -274,19 +274,39 @@ The system uses SQLite with the following tables:
 
 ## Deployment
 
-For production deployment to Vercel, see [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
+### Production Deployment to Vercel
 
-### Quick Deploy to Vercel
+**⚠️ Important:** SQLite doesn't work on Vercel. You MUST use Vercel Postgres.
 
-1. Push your code to GitHub/GitLab/Bitbucket
-2. Import project in [Vercel Dashboard](https://vercel.com/dashboard)
-3. Add environment variables:
+#### Quick Setup:
+
+1. **Setup Vercel Postgres** - See [VERCEL_POSTGRES_SETUP.md](VERCEL_POSTGRES_SETUP.md)
+   - Create database in Vercel Dashboard → Storage
+   - Connect to your project
+   - Database credentials added automatically
+
+2. **Push your code**
+   ```bash
+   git push
+   ```
+
+3. **Import project** in [Vercel Dashboard](https://vercel.com/dashboard)
+
+4. **Add environment variables:**
    - `NODE_ENV=production`
-   - `JWT_SECRET=your_secure_key`
+   - `JWT_SECRET=your_secure_key_32_chars_minimum`
    - `PORT=5000`
-4. Deploy!
+   - `POSTGRES_URL` (auto-set by Vercel Postgres)
 
-**Note:** For production, consider replacing SQLite with a cloud database (PostgreSQL, MongoDB, etc.)
+5. **Deploy!**
+
+For detailed instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)
+
+### Database Options
+
+- **Production (Vercel):** Vercel Postgres (recommended) - see [VERCEL_POSTGRES_SETUP.md](VERCEL_POSTGRES_SETUP.md)
+- **Local Development:** SQLite (default) or PostgreSQL
+- **Alternative:** Supabase, PlanetScale, MongoDB Atlas
 
 ## Future Enhancements
 

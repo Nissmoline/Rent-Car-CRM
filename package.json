@@ -9,7 +9,8 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "install-all": "npm install && cd client && npm install",
     "build": "cd client && npm install && npm run build",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "vercel-build": "npm run build"
   },
   "keywords": [
     "crm",

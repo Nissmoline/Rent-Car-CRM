@@ -274,11 +274,11 @@ function initializeSQLiteDatabase(db) {
 }
 
 // Initialize database on load
-if (pool && !isVercel) {
-  initializePostgresDatabase().catch(console.error);
-} else if (isVercel) {
-  // Initialize on first request for Vercel
-  initializePostgresDatabase().catch(console.error);
+if (pool) {
+  console.log('Initializing PostgreSQL database...');
+  initializePostgresDatabase()
+    .then(() => console.log('PostgreSQL database initialized successfully'))
+    .catch(err => console.error('Failed to initialize PostgreSQL database:', err));
 }
 
 module.exports = { pool, isVercel, type: 'postgres', initializePostgresDatabase };

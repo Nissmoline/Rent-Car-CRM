@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const db = require('../database/db');
+const { queryOne, execute } = require('../database/db-adapter');
 
 const router = express.Router();
 
@@ -24,21 +24,21 @@ router.post('/register',
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      db.run(
+      const result = await execute(
         'INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)',
-        [username, email, hashedPassword, role || 'employee'],
-        function(err) {
-          if (err) {
-            if (err.message.includes('UNIQUE')) {
-              return res.status(400).json({ error: 'Username or email already exists' });
-            }
-            return res.status(500).json({ error: 'Error creating user' });
-          }
-          res.status(201).json({ message: 'User created successfully', userId: this.lastID });
-        }
+        [username, email, hashedPassword, role || 'employee']
       );
+
+      res.status(201).json({
+        message: 'User created successfully',
+        userId: result.lastID || result.rows?.[0]?.id
+      });
     } catch (error) {
-      res.status(500).json({ error: 'Server error' });
+      if (error.message?.includes('UNIQUE') || error.code === '23505') {
+        return res.status(400).json({ error: 'Username or email already exists' });
+      }
+      console.error('Register error:', error);
+      res.status(500).json({ error: 'Error creating user' });
     }
   }
 );
@@ -57,10 +57,9 @@ router.post('/login',
 
     const { email, password } = req.body;
 
-    db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-      if (err) {
-        return res.status(500).json({ error: 'Server error' });
-      }
+    try {
+      const user = await queryOne('SELECT * FROM users WHERE email = ?', [email]);
+
       if (!user) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
@@ -85,7 +84,10 @@ router.post('/login',
           role: user.role
         }
       });
-    });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'Server error' });
+    }
   }
 );
 

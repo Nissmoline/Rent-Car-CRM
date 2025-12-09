@@ -12,7 +12,7 @@ if (process.env.POSTGRES_URL) {
     // On Vercel, use WebSocket for Neon
     const { neon } = require('@neondatabase/serverless');
     const sql = neon(process.env.POSTGRES_URL);
-    pool = { sql, query: sql };
+    pool = { query: (q, p) => sql(q, p) };
     console.log('Using Neon PostgreSQL (Vercel)');
   } else {
     // Locally, use standard pool
@@ -153,13 +153,8 @@ async function initializePostgresDatabase() {
     ];
 
     for (const query of queries) {
-      if (isVercel) {
-        // Neon on Vercel
-        await client.sql(query);
-      } else {
-        // Standard PostgreSQL
-        await client.query(query);
-      }
+      // Use pool.query for both Vercel and local
+      await client.query(query);
     }
 
     if (!isVercel && client.release) {

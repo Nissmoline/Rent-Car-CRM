@@ -19,16 +19,16 @@ if (usePostgres) {
      */
     async run(query, params = []) {
       try {
+        const result = await pool.query(query, params);
         if (isVercel) {
-          // Neon on Vercel - pool.sql is the neon() function
-          const result = await pool.sql(query, params);
+          // Neon returns array directly
           return {
             lastID: result[0]?.id,
             rowCount: result.length,
             rows: result
           };
         } else {
-          const result = await pool.query(query, params);
+          // Standard PostgreSQL returns result object
           return {
             lastID: result.rows[0]?.id,
             rowCount: result.rowCount,
@@ -46,13 +46,8 @@ if (usePostgres) {
      */
     async get(query, params = []) {
       try {
-        if (isVercel) {
-          const result = await pool.sql(query, params);
-          return result[0];
-        } else {
-          const result = await pool.query(query, params);
-          return result.rows[0];
-        }
+        const result = await pool.query(query, params);
+        return isVercel ? result[0] : result.rows[0];
       } catch (error) {
         console.error('Database get error:', error);
         throw error;
@@ -64,13 +59,8 @@ if (usePostgres) {
      */
     async all(query, params = []) {
       try {
-        if (isVercel) {
-          const result = await pool.sql(query, params);
-          return result;
-        } else {
-          const result = await pool.query(query, params);
-          return result.rows;
-        }
+        const result = await pool.query(query, params);
+        return isVercel ? result : result.rows;
       } catch (error) {
         console.error('Database all error:', error);
         throw error;

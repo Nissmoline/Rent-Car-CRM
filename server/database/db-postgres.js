@@ -1,4 +1,4 @@
-const { Pool } = require('pg');
+const { Pool, neonConfig } = require('@neondatabase/serverless');
 
 // Determine if we're running on Vercel or locally
 const isProduction = process.env.NODE_ENV === 'production';
@@ -6,18 +6,22 @@ const isVercel = process.env.VERCEL === '1';
 
 let pool;
 
-if (isVercel) {
-  // Use Vercel Postgres SDK
-  const { sql } = require('@vercel/postgres');
-  pool = { sql }; // Wrap sql for compatibility
-  console.log('Using Vercel Postgres');
-} else if (process.env.POSTGRES_URL) {
-  // Use standard PostgreSQL connection
-  pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
-    ssl: isProduction ? { rejectUnauthorized: false } : false,
-  });
-  console.log('Using PostgreSQL connection');
+if (process.env.POSTGRES_URL) {
+  // Use Neon PostgreSQL (works both on Vercel and locally)
+  if (isVercel) {
+    // On Vercel, use WebSocket for Neon
+    const { neon } = require('@neondatabase/serverless');
+    const sql = neon(process.env.POSTGRES_URL);
+    pool = { sql, query: sql };
+    console.log('Using Neon PostgreSQL (Vercel)');
+  } else {
+    // Locally, use standard pool
+    pool = new Pool({
+      connectionString: process.env.POSTGRES_URL,
+      ssl: { rejectUnauthorized: false }
+    });
+    console.log('Using Neon PostgreSQL (Local)');
+  }
 } else {
   // Fallback to SQLite for local development
   const sqlite3 = require('sqlite3').verbose();
@@ -39,7 +43,14 @@ if (isVercel) {
 
 async function initializePostgresDatabase() {
   try {
-    const client = isVercel ? pool : await pool.connect();
+    let client;
+    if (isVercel) {
+      // On Vercel with Neon, use sql directly
+      client = pool;
+    } else {
+      // Locally, get a client from pool
+      client = await pool.connect();
+    }
 
     const queries = [
       // Users table
@@ -143,13 +154,15 @@ async function initializePostgresDatabase() {
 
     for (const query of queries) {
       if (isVercel) {
-        await client.sql.query(query);
+        // Neon on Vercel
+        await client.sql(query);
       } else {
+        // Standard PostgreSQL
         await client.query(query);
       }
     }
 
-    if (!isVercel) {
+    if (!isVercel && client.release) {
       client.release();
     }
 

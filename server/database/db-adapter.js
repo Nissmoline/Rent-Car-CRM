@@ -12,7 +12,6 @@ let queryConverter;
 if (usePostgres) {
   // PostgreSQL setup
   const { pool, isVercel } = require('./db-postgres');
-  const { sql } = isVercel ? require('@vercel/postgres') : { sql: null };
 
   dbAdapter = {
     /**
@@ -21,11 +20,12 @@ if (usePostgres) {
     async run(query, params = []) {
       try {
         if (isVercel) {
-          const result = await sql.query(query, params);
+          // Neon on Vercel - pool.sql is the neon() function
+          const result = await pool.sql(query, params);
           return {
-            lastID: result.rows[0]?.id,
-            rowCount: result.rowCount,
-            rows: result.rows
+            lastID: result[0]?.id,
+            rowCount: result.length,
+            rows: result
           };
         } else {
           const result = await pool.query(query, params);
@@ -47,8 +47,8 @@ if (usePostgres) {
     async get(query, params = []) {
       try {
         if (isVercel) {
-          const result = await sql.query(query, params);
-          return result.rows[0];
+          const result = await pool.sql(query, params);
+          return result[0];
         } else {
           const result = await pool.query(query, params);
           return result.rows[0];
@@ -65,8 +65,8 @@ if (usePostgres) {
     async all(query, params = []) {
       try {
         if (isVercel) {
-          const result = await sql.query(query, params);
-          return result.rows;
+          const result = await pool.sql(query, params);
+          return result;
         } else {
           const result = await pool.query(query, params);
           return result.rows;

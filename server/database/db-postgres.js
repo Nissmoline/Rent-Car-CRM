@@ -1,27 +1,13 @@
-const { Pool, neonConfig } = require('@neondatabase/serverless');
-
-// Determine if we're running on Vercel or locally
-const isProduction = process.env.NODE_ENV === 'production';
-const isVercel = process.env.VERCEL === '1';
+const { Pool } = require('@neondatabase/serverless');
 
 let pool;
 
 if (process.env.POSTGRES_URL) {
-  // Use Neon PostgreSQL (works both on Vercel and locally)
-  if (isVercel) {
-    // On Vercel, use WebSocket for Neon
-    const { neon } = require('@neondatabase/serverless');
-    const sql = neon(process.env.POSTGRES_URL);
-    pool = { query: (q, p) => sql(q, p) };
-    console.log('Using Neon PostgreSQL (Vercel)');
-  } else {
-    // Locally, use standard pool
-    pool = new Pool({
-      connectionString: process.env.POSTGRES_URL,
-      ssl: { rejectUnauthorized: false }
-    });
-    console.log('Using Neon PostgreSQL (Local)');
-  }
+  // Use Neon PostgreSQL Pool (works both on Vercel and locally)
+  pool = new Pool({
+    connectionString: process.env.POSTGRES_URL
+  });
+  console.log('Using Neon PostgreSQL Pool');
 } else {
   // Fallback to SQLite for local development
   const sqlite3 = require('sqlite3').verbose();
@@ -43,14 +29,7 @@ if (process.env.POSTGRES_URL) {
 
 async function initializePostgresDatabase() {
   try {
-    let client;
-    if (isVercel) {
-      // On Vercel with Neon, use sql directly
-      client = pool;
-    } else {
-      // Locally, get a client from pool
-      client = await pool.connect();
-    }
+    const client = await pool.connect();
 
     const queries = [
       // Users table
@@ -153,13 +132,10 @@ async function initializePostgresDatabase() {
     ];
 
     for (const query of queries) {
-      // Use pool.query for both Vercel and local
       await client.query(query);
     }
 
-    if (!isVercel && client.release) {
-      client.release();
-    }
+    client.release();
 
     console.log('PostgreSQL database tables initialized');
   } catch (error) {
@@ -289,4 +265,4 @@ if (pool) {
     .catch(err => console.error('Failed to initialize PostgreSQL database:', err));
 }
 
-module.exports = { pool, isVercel, type: 'postgres', initializePostgresDatabase };
+module.exports = { pool, type: 'postgres', initializePostgresDatabase };

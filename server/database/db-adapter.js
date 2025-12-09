@@ -11,7 +11,7 @@ let queryConverter;
 
 if (usePostgres) {
   // PostgreSQL setup
-  const { pool, isVercel } = require('./db-postgres');
+  const { pool } = require('./db-postgres');
 
   dbAdapter = {
     /**
@@ -20,21 +20,11 @@ if (usePostgres) {
     async run(query, params = []) {
       try {
         const result = await pool.query(query, params);
-        if (isVercel) {
-          // Neon returns array directly
-          return {
-            lastID: result[0]?.id,
-            rowCount: result.length,
-            rows: result
-          };
-        } else {
-          // Standard PostgreSQL returns result object
-          return {
-            lastID: result.rows[0]?.id,
-            rowCount: result.rowCount,
-            rows: result.rows
-          };
-        }
+        return {
+          lastID: result.rows[0]?.id,
+          rowCount: result.rowCount,
+          rows: result.rows
+        };
       } catch (error) {
         console.error('Database run error:', error);
         throw error;
@@ -47,7 +37,7 @@ if (usePostgres) {
     async get(query, params = []) {
       try {
         const result = await pool.query(query, params);
-        return isVercel ? result[0] : result.rows[0];
+        return result.rows[0];
       } catch (error) {
         console.error('Database get error:', error);
         throw error;
@@ -60,7 +50,7 @@ if (usePostgres) {
     async all(query, params = []) {
       try {
         const result = await pool.query(query, params);
-        return isVercel ? result : result.rows;
+        return result.rows;
       } catch (error) {
         console.error('Database all error:', error);
         throw error;

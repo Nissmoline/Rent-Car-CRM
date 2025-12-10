@@ -1,12 +1,11 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { query, queryOne, execute } = require('../database/db-adapter');
-const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all customers
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { search } = req.query;
     let queryStr = 'SELECT * FROM customers WHERE 1=1';
@@ -29,7 +28,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Get customer by ID
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const customer = await queryOne('SELECT * FROM customers WHERE id = ?', [req.params.id]);
 
@@ -44,7 +43,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // Get customer bookings
-router.get('/:id/bookings', authenticateToken, async (req, res) => {
+router.get('/:id/bookings', async (req, res) => {
   try {
     const queryStr = `
       SELECT b.*, v.brand, v.model, v.license_plate
@@ -64,7 +63,6 @@ router.get('/:id/bookings', authenticateToken, async (req, res) => {
 
 // Create new customer
 router.post('/',
-  authenticateToken,
   [
     body('first_name').notEmpty().withMessage('First name is required'),
     body('last_name').notEmpty().withMessage('Last name is required'),
@@ -106,7 +104,7 @@ router.post('/',
 );
 
 // Update customer
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', async (req, res) => {
   const {
     first_name, last_name, email, phone, license_number,
     address, city, country, date_of_birth
@@ -132,7 +130,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete customer
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const result = await execute('DELETE FROM customers WHERE id = ?', [req.params.id]);
 

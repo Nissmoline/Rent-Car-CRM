@@ -1,12 +1,11 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { query, queryOne, execute } = require('../database/db-adapter');
-const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all payments
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const queryStr = `
       SELECT p.*,
@@ -30,7 +29,6 @@ router.get('/', authenticateToken, async (req, res) => {
 
 // Create new payment
 router.post('/',
-  authenticateToken,
   [
     body('booking_id').isInt().withMessage('Valid booking ID is required'),
     body('amount').isFloat({ min: 0 }).withMessage('Valid amount is required'),
@@ -69,7 +67,7 @@ router.post('/',
 );
 
 // Delete payment
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     // First get the payment details
     const payment = await queryOne('SELECT * FROM payments WHERE id = ?', [req.params.id]);

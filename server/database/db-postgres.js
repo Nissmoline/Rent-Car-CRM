@@ -257,11 +257,67 @@ function initializeSQLiteDatabase(db) {
   });
 }
 
+async function insertDemoData() {
+  try {
+    const client = await pool.connect();
+
+    // Check if demo data already exists
+    const checkCustomers = await client.query('SELECT COUNT(*) as count FROM customers');
+    if (checkCustomers.rows[0].count > 0) {
+      console.log('Demo data already exists, skipping...');
+      client.release();
+      return;
+    }
+
+    console.log('Inserting demo data...');
+
+    // Insert demo customers
+    const customersInsert = await client.query(`
+      INSERT INTO customers (first_name, last_name, email, phone, license_number, address, city, country)
+      VALUES
+        ('John', 'Doe', 'john.doe@example.com', '+1234567890', 'DL123456', '123 Main St', 'New York', 'USA'),
+        ('Jane', 'Smith', 'jane.smith@example.com', '+1234567891', 'DL123457', '456 Oak Ave', 'Los Angeles', 'USA'),
+        ('Bob', 'Johnson', 'bob.johnson@example.com', '+1234567892', 'DL123458', '789 Pine Rd', 'Chicago', 'USA')
+      RETURNING id
+    `);
+
+    // Insert demo vehicles
+    const vehiclesInsert = await client.query(`
+      INSERT INTO vehicles (brand, model, year, color, license_plate, vin, category, transmission, fuel_type, seats, daily_rate, status, mileage)
+      VALUES
+        ('Toyota', 'Camry', 2023, 'Silver', 'ABC123', 'VIN1234567890', 'Sedan', 'Automatic', 'Gasoline', 5, 50.00, 'available', 15000),
+        ('Honda', 'CR-V', 2023, 'Black', 'DEF456', 'VIN1234567891', 'SUV', 'Automatic', 'Gasoline', 7, 75.00, 'available', 12000),
+        ('Tesla', 'Model 3', 2024, 'White', 'GHI789', 'VIN1234567892', 'Sedan', 'Automatic', 'Electric', 5, 90.00, 'rented', 5000),
+        ('Ford', 'F-150', 2023, 'Blue', 'JKL012', 'VIN1234567893', 'Truck', 'Automatic', 'Gasoline', 5, 85.00, 'available', 20000),
+        ('BMW', 'X5', 2024, 'Gray', 'MNO345', 'VIN1234567894', 'SUV', 'Automatic', 'Gasoline', 7, 120.00, 'available', 8000)
+      RETURNING id
+    `);
+
+    // Insert demo bookings
+    await client.query(`
+      INSERT INTO bookings (customer_id, vehicle_id, start_date, end_date, pickup_location, return_location, total_amount, paid_amount, status)
+      VALUES
+        ($1, $2, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE + INTERVAL '2 days', 'Airport', 'Downtown', 630.00, 630.00, 'active'),
+        ($3, $4, CURRENT_DATE + INTERVAL '3 days', CURRENT_DATE + INTERVAL '10 days', 'Downtown', 'Airport', 525.00, 200.00, 'confirmed'),
+        ($5, $6, CURRENT_DATE - INTERVAL '30 days', CURRENT_DATE - INTERVAL '25 days', 'Airport', 'Airport', 250.00, 250.00, 'completed')
+    `, [customersInsert.rows[0].id, vehiclesInsert.rows[2].id, customersInsert.rows[1].id, customersInsert.rows[0].id, customersInsert.rows[2].id, vehiclesInsert.rows[0].id]);
+
+    client.release();
+    console.log('Demo data inserted successfully');
+  } catch (error) {
+    console.error('Error inserting demo data:', error);
+  }
+}
+
 // Initialize database on load
 if (pool) {
   console.log('Initializing PostgreSQL database...');
   initializePostgresDatabase()
-    .then(() => console.log('PostgreSQL database initialized successfully'))
+    .then(() => {
+      console.log('PostgreSQL database initialized successfully');
+      return insertDemoData();
+    })
+    .then(() => console.log('Setup complete'))
     .catch(err => console.error('Failed to initialize PostgreSQL database:', err));
 }
 

@@ -1,12 +1,11 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { query, queryOne, execute } = require('../database/db-adapter');
-const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all bookings
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { status } = req.query;
     let queryStr = `
@@ -36,7 +35,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Get booking by ID
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const queryStr = `
       SELECT b.*,
@@ -61,7 +60,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // Get booking payments
-router.get('/:id/payments', authenticateToken, async (req, res) => {
+router.get('/:id/payments', async (req, res) => {
   try {
     const payments = await query(
       'SELECT * FROM payments WHERE booking_id = ? ORDER BY payment_date DESC',
@@ -76,7 +75,6 @@ router.get('/:id/payments', authenticateToken, async (req, res) => {
 
 // Create new booking
 router.post('/',
-  authenticateToken,
   [
     body('customer_id').isInt().withMessage('Valid customer ID is required'),
     body('vehicle_id').isInt().withMessage('Valid vehicle ID is required'),
@@ -119,7 +117,7 @@ router.post('/',
          pickup_location, return_location, total_amount, status, notes, created_by)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [customer_id, vehicle_id, start_date, end_date, pickup_location, return_location,
-         total_amount, status || 'pending', notes, req.user.id]
+         total_amount, status || 'pending', notes, null]
       );
 
       res.status(201).json({
@@ -134,7 +132,7 @@ router.post('/',
 );
 
 // Update booking
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', async (req, res) => {
   const {
     customer_id, vehicle_id, start_date, end_date,
     pickup_location, return_location, total_amount, paid_amount, status, notes
@@ -168,7 +166,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete booking
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const result = await execute('DELETE FROM bookings WHERE id = ?', [req.params.id]);
 

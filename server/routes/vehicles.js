@@ -1,12 +1,11 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { query, queryOne, execute } = require('../database/db-adapter');
-const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all vehicles
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { status, category } = req.query;
     let queryStr = 'SELECT * FROM vehicles WHERE 1=1';
@@ -32,7 +31,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Get vehicle by ID
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const vehicle = await queryOne('SELECT * FROM vehicles WHERE id = ?', [req.params.id]);
 
@@ -48,7 +47,6 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 // Create new vehicle
 router.post('/',
-  authenticateToken,
   [
     body('brand').notEmpty().withMessage('Brand is required'),
     body('model').notEmpty().withMessage('Model is required'),
@@ -93,7 +91,7 @@ router.post('/',
 );
 
 // Update vehicle
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', async (req, res) => {
   const {
     brand, model, year, color, license_plate, vin, category,
     transmission, fuel_type, seats, daily_rate, status, mileage, image_url
@@ -120,7 +118,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete vehicle
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const result = await execute('DELETE FROM vehicles WHERE id = ?', [req.params.id]);
 

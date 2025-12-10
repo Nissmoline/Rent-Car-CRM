@@ -1,11 +1,10 @@
 const express = require('express');
 const { query, queryOne } = require('../database/db-adapter');
-const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get dashboard statistics
-router.get('/stats', authenticateToken, async (req, res) => {
+router.get('/stats', async (req, res) => {
   try {
     const stats = {};
 
@@ -53,7 +52,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
 });
 
 // Get recent bookings
-router.get('/recent-bookings', authenticateToken, async (req, res) => {
+router.get('/recent-bookings', async (req, res) => {
   try {
     const queryStr = `
       SELECT b.id, b.start_date, b.end_date, b.status, b.total_amount,
@@ -75,7 +74,7 @@ router.get('/recent-bookings', authenticateToken, async (req, res) => {
 });
 
 // Get revenue by month (last 6 months)
-router.get('/revenue-chart', authenticateToken, async (req, res) => {
+router.get('/revenue-chart', async (req, res) => {
   try {
     const queryStr = `
       SELECT strftime('%Y-%m', payment_date) as month, SUM(amount) as revenue
@@ -94,7 +93,7 @@ router.get('/revenue-chart', authenticateToken, async (req, res) => {
 });
 
 // Get popular vehicles
-router.get('/popular-vehicles', authenticateToken, async (req, res) => {
+router.get('/popular-vehicles', async (req, res) => {
   try {
     const queryStr = `
       SELECT v.id, v.brand, v.model, v.category, COUNT(b.id) as booking_count

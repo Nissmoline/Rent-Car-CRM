@@ -12,6 +12,14 @@ const dashboardRoutes = require('./routes/dashboard');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Initialize PostgreSQL database on startup if using Neon
+if (process.env.POSTGRES_URL) {
+  const { initializePostgresDatabase } = require('./database/db-postgres');
+  initializePostgresDatabase()
+    .then(() => console.log('PostgreSQL database initialized successfully'))
+    .catch(err => console.error('Failed to initialize PostgreSQL database:', err));
+}
+
 // Middleware
 app.use(cors());
 app.use(express.json());
